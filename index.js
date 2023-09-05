@@ -56,7 +56,71 @@ app.post("/emojis", (req, res) => {
   res.send({ success: true, emoji: toPush });
 });
 
-// deletes
+// deletes an entry
+
+app.delete("/emojis/:emojiId", (req, res) => {
+  const { emojiId } = req.params;
+  const index = emojis.findIndex((emoji) => Number(emojiId) === emoji.id);
+  if (isNaN(emojiId)) {
+    return res.send({
+      success: false,
+      error: "the id to delete an emoji must be a number",
+    });
+  }
+  if (index === -1) {
+    return res.send({
+      success: false,
+      error: "An emoji with that ID was not found",
+    });
+  }
+  const returnValue = emojis.splice(index, 1);
+  res.send({ success: true, emoji: returnValue });
+});
+
+// modify an emoji with put
+app.put("/emojis/:emojiId", (req, res) => {
+  const { emojiId } = req.params;
+  const { body } = req;
+  const index = emojis.findIndex((emoji) => Number(emojiId) === emoji.id);
+  if (isNaN(emojiId)) {
+    return res.send({
+      success: false,
+      error: "the id to delete an emoji must be a number",
+    });
+  }
+  if (index === -1) {
+    return res.send({
+      success: false,
+      error: "An emoji with that ID was not found",
+    });
+  }
+  if (!body.name || !body.character) {
+    return res.send({
+      success: false,
+      error: "Both name and character must be provided to modify an emoji",
+    });
+  }
+  if (body.name.length < 3) {
+    return res.send({ success: false, error: "Please provide a valid name" });
+  }
+  if (body.character.length > 2) {
+    console.log(body.character.length);
+    return res.send({
+      success: false,
+      error: "The character must be an emoji!",
+    });
+  }
+  emojis.splice(index, 1);
+  const returnValue = { ...body, id: +emojiId };
+  emojis.push(returnValue);
+  res.send({ success: true, returnValue });
+});
+
+// path not found default
+
+app.use((error, req, res, next) => {
+  res.send({ success: false, error: error.message });
+});
 
 // essential boilerplate
 const port = 3000;
